@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js">
+    function validateEndDate(){
+      var millisecondsPerDay = 1000*60*60*24;
+      var startDt = new Date($("#startDate").val);
+      var endDt = new Date($("#endDate").val);
+      var millisBetween = endDt.getTime()-startDt.getTime();
+      var daysDiff = Math.floor(millisBetween/millisecondsPerDay);
+      if (daysDiff > 90){
+        let residue = daysDiff - 90;
+        let correction = endDt.getDate()-residue;
+        $("#endDate").val = correction+$("endDate").val.substring(2);
+      }
+    }
+    
+    function submitFrm(){
+      var subAmt = $("#amtCharged").val;
+      var subType = $("#subType").val;
+      var dayOrDate = $("#dayDate").val;
+      var startDate = $("#startDate").val;
+      var endDate = $("#endDate").val;
+      var jsonData = {};
+      jsonData['amount'] = subAmt;
+      jsonData['subscriptionType'] = subType;
+      jsonData['dayOrDate'] = dayOrDate;
+      jsonData['startDate'] = startDate;
+      jsonDate['endDate'] = endDate;
+      $.ajax({
+        type: 'POST',
+        url: 'http://localhost:9090/ezypay/api/subscription',
+        data: JSON.stringify(jsonData),
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json'
+      })
+      .done(function(res){$("#response").html(res + ' subscription created. Amount: ' + subAmt + ', Subscription Type: ' + subType + ', invoice date: ' + endDate);})
+      .fail(function(){alert('Error while creating EZypay subscription!');});
+    }
+  </script>
+</head>
+<body>
+  <form id="subForm">
+    <p>Create a subscription</p>
+    <table id="subTbl" width="70%" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="35%">Subscription amount:</td>
+        <td><input type="number" id="amtCharged" maxlength="8" size="8"/></td>
+      </tr>
+      <tr>
+        <td>Subscription type:</td>
+        <td>
+          <input type="radio" id="subType" value="daily">Daily<br>
+          <input type="radio" id="subType" value="weekly">Weekly<br>
+          <input type="radio" id="subType" value="monthly">Monthly<br>
+        </td>
+      </tr>
+      <tr>
+        <td>Day or date:</td>
+        <td><input type="text" id="dayDate" maxlength="8" size="8"/></td>
+      </tr>
+      <tr>
+        <td>Start date:</td>
+        <td><input type="text" id="startDate" maxlength="8" size="8"/></td>
+      </tr>
+      <tr>
+        <td>End date:</td>
+        <td><input type="text" id="endDate" maxlength="8" size="8"/></td>
+      </tr>
+    </table>
+    <input type="button" id="submit" value="submit" onclick="submitFrm();"/>
+    <div id="response"></div>
+  </form>
+</body>
+</html>
